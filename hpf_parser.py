@@ -30,6 +30,12 @@ class UnknownHPFChunkTypeError(Exception):
             self.message = message.format(chunkID=value, CHUNK_TYPE=CHUNK_TYPE)
             super().__init__(self.message)
 
+class DataChunkNotFound(Exception):
+        def __init__(self, value, message="'data' chunk is missing from HPF file, only found these chunks: {is_chunk_found}."):
+            self.value = value
+            self.message = message.format(is_chunk_found=value)
+            super().__init__(self.message)
+
 def read_int64(f):
     return int.from_bytes(f.read(8), byteorder='little')
 
@@ -39,6 +45,7 @@ def read_int32(f):
 def parse(f):
     chunkID = -1
     chunkHead = 0
+    is_chunk_found = dict.fromkeys(CHUNK_TYPE.values(), False)
     while chunkID != 0:
         chunkID = read_int64(f)
         if chunkID == 0:
@@ -135,14 +142,23 @@ def parse(f):
         else:
             break
         
+        is_chunk_found[chunkType] = True
         chunkHead += chunkSize
         # logger.debug(f"chunkHead {chunkHead}")
 
+    if not is_chunk_found["data"]:
+        raise DataChunkNotFound(is_chunk_found)
+        
     # time is calculated by (1 sec / PerChannelSampleRate) per record in ch_info
     time_col = []
     for i in range(chan_data_count):
         time_step = 1/float(ch_infos[i]["PerChannelSampleRate"])
-        time_col.append(np.arange(0, len(chan_data[i]) * time_step, time_step))
+        rough_time_col = np.arange(0, len(chan_data[i]) * time_step, time_step)
+        # numpy: except in some cases where step is not an integer and 
+        # floating point round-off affects the length of out
+        if len(rough_time_col) > len(chan_data[i]):
+            rough_time_col = rough_time_col[:len(chan_data[i])]
+        time_col.append(rough_time_col)
     # merge time_col_names, ch_names; time_col, chan_data;
     merged_col_names = []
     merged_data = []
@@ -155,4 +171,3 @@ def parse(f):
     ch_df = pd.DataFrame(np.column_stack(merged_data), columns=merged_col_names)
     
     return pretty_header, pretty_ch_info, ch_df
-    
