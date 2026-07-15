@@ -60,4 +60,4 @@ def readhpf(fname):
         print(chunkID)
         
 if __name__ == "__main__":
-    readhpf("./data/subject4/Subject_#4_BF_Rep_1.3.hpf")
+    readhpf("./data/202510/subject4/Subject_#4_BF_Rep_1.3.hpf")

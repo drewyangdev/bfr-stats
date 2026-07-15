@@ -7,7 +7,6 @@ np.set_printoptions(threshold=sys.maxsize)
 import pandas as pd
 import re
 import xml.dom.minidom as minidom
-
 from log import logger
 
 CHUNK_TYPE = {

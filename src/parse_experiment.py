@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from log import logger
-import hpf_parser
+import hpf_parser as hpf_parser
 
 ## a directory with folders of experiment
 data_dir = "./data/"
@@ -55,9 +55,4 @@ if __name__ == "__main__":
                 with open(os.path.join(parsed_dir, f"{fname}-ch_info.xml"), "w", encoding="utf-8") as out:
                     out.write(ch_info)
                 ch_df.to_csv(os.path.join(parsed_dir, f"{fname}-ch_data.csv"), index=False, encoding='utf-8-sig') # for degree symbols
-                # TODO - validation with Delsys File Utility cmd on Windows
             # break
-        
-            # TODO Normalizaer
-            
-            # TODO Stat
